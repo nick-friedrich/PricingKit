@@ -64,14 +64,17 @@ The active-app cookie is the source of truth that all API routes consume via `ge
 
 The existing cookie helpers (`getAuthFromCookies` for Google, the Apple equivalent in `src/app/api/apple/auth/route.ts:147-163`) continue to return `{ credentials, packageName }` / `{ credentials, bundleId }` by reading the credentials cookie *and* the active-app cookie. No refactor of API route handlers is needed — the active app is still cookie-backed; what expands is *who can change it* (the new `/active-app` endpoint, in addition to the existing auth route).
 
-### `AppleConnectCredentials` shape change
+### Apple credentials sourcing change
 
-The `bundleId` field is removed from the `AppleConnectCredentials` type — credentials no longer carry the active app:
+`credentials.bundleId` is read by ~6 modules (`client.ts`, `products.ts`, `subscriptions.ts`, `app-price.ts`, `auth/route.ts`). Rather than ripple a type change through all of them, the field stays on the `AppleConnectCredentials` type — but its **source** changes:
 
-- `validateAppleCredentials` (`src/lib/apple-connect/client.ts:121`) drops the bundleId check.
-- `hashCredentials` (`src/lib/apple-connect/client.ts:22`) drops bundleId from its hash key.
-- `getAppIdForBundleId` (`src/lib/apple-connect/client.ts:338`) takes `bundleId` as an explicit second parameter instead of reading `credentials.bundleId`.
-- The Apple cookie helper returns `{ credentials, bundleId }` separately, and call sites pass both into downstream functions explicitly.
+- The uploaded credentials no longer carry `bundleId` (the upload form drops the field).
+- The encrypted session payload (`createAppleSession` / `getAppleSessionCredentials`) stores only `{ privateKey, keyId, issuerId }`.
+- The `apple_bundle_id` cookie holds the active bundleId, set by the new `/api/apple/active-app` endpoint and the existing first-time selection flow.
+- `getAppleAuthFromCookies` reads both cookies and returns `{ credentials: { privateKey, keyId, issuerId, bundleId }, bundleId }` — synthesizing a complete `AppleConnectCredentials` object by injecting the cookie's bundleId into the session payload. All downstream code that reads `credentials.bundleId` keeps working without changes.
+- `validateAppleCredentials` (`src/lib/apple-connect/client.ts:121`) is split: the upload-validation path no longer requires bundleId (used for the upload form), but the type still includes the field.
+- `hashCredentials` (`src/lib/apple-connect/client.ts:22`) drops bundleId from its hash key — JWTs are per-account, not per-app, and nothing about the JWT changes when the bundleId changes.
+- `testAppleConnection` (`src/lib/apple-connect/client.ts:296`) takes the credentials without bundleId; replaces the bundleId-filtered probe with an unfiltered `/apps?limit=1` call.
 
 ## Client state changes
 
