@@ -31,7 +31,6 @@ export function AppleConnectUpload() {
 
   const [keyId, setKeyId] = useState('');
   const [issuerId, setIssuerId] = useState('');
-  const [bundleId, setBundleId] = useState('');
   const [state, setState] = useState<UploadState>({
     isDragging: false,
     file: null,
@@ -95,7 +94,7 @@ export function AppleConnectUpload() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!state.file || !keyId.trim() || !issuerId.trim() || !bundleId.trim()) {
+    if (!state.file || !keyId.trim() || !issuerId.trim()) {
       setState((prev) => ({
         ...prev,
         error: 'Please provide all required fields',
@@ -115,7 +114,6 @@ export function AppleConnectUpload() {
           privateKey,
           keyId: keyId.trim(),
           issuerId: issuerId.trim(),
-          bundleId: bundleId.trim(),
         }),
       });
 
@@ -131,12 +129,12 @@ export function AppleConnectUpload() {
       }
 
       setAppleAuthenticated({
-        bundleId: bundleId.trim(),
+        bundleId: '',
         keyId: keyId.trim(),
         issuerId: issuerId.trim(),
       });
       setPlatform('apple');
-      router.push('/dashboard');
+      router.push('/setup/apple/select-app');
     } catch (error) {
       console.error('Upload error:', error);
       setState((prev) => ({
@@ -158,18 +156,6 @@ export function AppleConnectUpload() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="bundleId">Bundle ID</Label>
-            <Input
-              id="bundleId"
-              type="text"
-              placeholder="com.example.myapp"
-              value={bundleId}
-              onChange={(e) => setBundleId(e.target.value)}
-              disabled={state.isLoading}
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="keyId">Key ID</Label>
@@ -253,7 +239,6 @@ export function AppleConnectUpload() {
               !state.file ||
               !keyId.trim() ||
               !issuerId.trim() ||
-              !bundleId.trim() ||
               state.isLoading
             }
           >
