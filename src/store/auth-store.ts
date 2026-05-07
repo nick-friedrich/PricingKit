@@ -11,7 +11,7 @@ interface GoogleAuthData {
 }
 
 interface AppleAuthData {
-  bundleId: string;
+  bundleId: string | null;
   keyId: string;
   issuerId: string;
 }

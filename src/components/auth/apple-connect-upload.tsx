@@ -129,7 +129,7 @@ export function AppleConnectUpload() {
       }
 
       setAppleAuthenticated({
-        bundleId: '',
+        bundleId: null,
         keyId: keyId.trim(),
         issuerId: issuerId.trim(),
       });
