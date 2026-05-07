@@ -135,9 +135,6 @@ export function validateAppleCredentials(
   if (typeof obj.issuerId !== 'string' || !obj.issuerId) {
     return false;
   }
-  if (typeof obj.bundleId !== 'string' || !obj.bundleId) {
-    return false;
-  }
 
   // Validate private key format (should be a PEM-formatted key)
   const privateKey = obj.privateKey;

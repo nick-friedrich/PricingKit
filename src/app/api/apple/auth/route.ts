@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { privateKey, keyId, issuerId, bundleId } = body;
+    const { privateKey, keyId, issuerId } = body;
 
-    if (!privateKey || !keyId || !issuerId || !bundleId) {
+    if (!privateKey || !keyId || !issuerId) {
       return NextResponse.json(
         { error: 'Missing required credentials' },
         { status: 400 }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       privateKey,
       keyId,
       issuerId,
-      bundleId,
+      bundleId: '',
     };
 
     if (!validateAppleCredentials(credentials)) {
@@ -47,7 +47,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Test the connection
     const testResult = await testAppleConnection(credentials);
     if (!testResult.success) {
       return NextResponse.json(
@@ -56,11 +55,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create session and store session ID in cookie
     const sessionId = await createAppleSession(credentials);
 
     const cookieStore = await cookies();
-
     cookieStore.set(SESSION_COOKIE, sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -68,18 +65,10 @@ export async function POST(request: NextRequest) {
       maxAge: COOKIE_MAX_AGE,
       path: '/',
     });
-
-    cookieStore.set(BUNDLE_ID_COOKIE, bundleId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: COOKIE_MAX_AGE,
-      path: '/',
-    });
+    cookieStore.delete(BUNDLE_ID_COOKIE);
 
     return NextResponse.json({
       success: true,
-      bundleId,
       keyId,
       issuerId,
     });
