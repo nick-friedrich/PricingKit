@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calculator, Globe, DollarSign, TrendingDown, Sliders, RefreshCw, Beef, Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
+import { Calculator, Globe, DollarSign, TrendingDown, Sliders, RefreshCw, Hamburger, Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -277,6 +277,10 @@ export function SubscriptionBulkPricingModal({
             aValue = a.currencyCode;
             bValue = b.currencyCode;
             break;
+          case 'multiplier':
+            aValue = a.multiplier;
+            bValue = b.multiplier;
+            break;
           case 'current':
             aValue = a.currentPriceNum;
             bValue = b.currentPriceNum;
@@ -480,8 +484,8 @@ export function SubscriptionBulkPricingModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
             Bulk Edit Regional Prices
@@ -491,7 +495,7 @@ export function SubscriptionBulkPricingModal({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-4">
         <div className="space-y-6 py-4">
           {/* Base Price Input */}
           <div className="space-y-2">
@@ -584,7 +588,7 @@ export function SubscriptionBulkPricingModal({
                         onChange={() => setStrategy('bigmac')}
                         className="sr-only"
                       />
-                      <Beef className="h-4 w-4 shrink-0" />
+                      <Hamburger className="h-4 w-4 shrink-0" />
                       <span className="text-sm font-medium truncate">Big Mac</span>
                     </label>
                   </TooltipTrigger>
@@ -695,7 +699,8 @@ export function SubscriptionBulkPricingModal({
                 </div>
               </div>
               <div className="border rounded-lg">
-                <ScrollArea className="h-96">
+                <ScrollArea className="h-72">
+                  <TooltipProvider delayDuration={100}>
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                       <TableRow>
@@ -719,6 +724,11 @@ export function SubscriptionBulkPricingModal({
                         <TableHead className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('currency')}>
                           <div className="flex items-center">
                             Currency {getSortIcon('currency')}
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-right cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('multiplier')}>
+                          <div className="flex items-center justify-end">
+                            Multiplier {getSortIcon('multiplier')}
                           </div>
                         </TableHead>
                         <TableHead className="text-right cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('current')}>
@@ -771,6 +781,33 @@ export function SubscriptionBulkPricingModal({
                             <TableCell className="text-sm text-muted-foreground">
                               {calculated.currencyCode}
                             </TableCell>
+                            <TableCell className="text-right text-sm">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={
+                                    calculated.multiplier < 1
+                                      ? 'text-green-600 cursor-help'
+                                      : calculated.multiplier > 1
+                                      ? 'text-orange-600 cursor-help'
+                                      : 'text-muted-foreground cursor-help'
+                                  }>
+                                    {calculated.multiplier.toFixed(2)}×
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <p className="text-xs">
+                                    {calculated.multiplierSource === 'world-bank' && 'World Bank PPP data'}
+                                    {calculated.multiplierSource === 'big-mac' && 'Big Mac Index'}
+                                    {calculated.multiplierSource === 'static' && 'Static fallback data'}
+                                    {calculated.multiplierSource === 'custom' && 'Custom multiplier'}
+                                    {calculated.multiplierSource === 'direct' && 'Direct conversion (1:1)'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Relative to US: {calculated.multiplier.toFixed(2)}×
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TableCell>
                             <TableCell className="text-right text-sm text-muted-foreground">
                               {currentPrice
                                 ? formatMoney(currentPrice)
@@ -801,14 +838,15 @@ export function SubscriptionBulkPricingModal({
                       })}
                     </TableBody>
                   </Table>
+                  </TooltipProvider>
                 </ScrollArea>
               </div>
             </div>
           )}
         </div>
-        </ScrollArea>
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 border-t pt-4 gap-2 sm:gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

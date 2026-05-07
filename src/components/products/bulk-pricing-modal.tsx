@@ -610,8 +610,8 @@ export function BulkPricingModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
             Bulk Edit Regional Prices
@@ -622,7 +622,7 @@ export function BulkPricingModal({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
         <div className="space-y-6 py-4">
           {/* Base Price Input */}
           <div className="space-y-2">
@@ -834,7 +834,7 @@ export function BulkPricingModal({
               </div>
             </div>
             <div className="border rounded-lg">
-              <ScrollArea className="h-[400px]">
+              <ScrollArea className="h-[300px]">
                 <TooltipProvider delayDuration={100}>
                 <Table>
                   <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
@@ -1034,7 +1034,7 @@ export function BulkPricingModal({
         </div>
         </ScrollArea>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 border-t pt-4 gap-2 sm:gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

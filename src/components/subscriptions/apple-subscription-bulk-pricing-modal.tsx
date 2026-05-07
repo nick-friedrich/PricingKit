@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calculator, Globe, DollarSign, TrendingDown, Sliders, RefreshCw, Beef, AlertTriangle, Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
+import { Calculator, Globe, DollarSign, TrendingDown, Sliders, RefreshCw, Hamburger, AlertTriangle, Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -137,6 +137,8 @@ interface PreviewPrice {
   currentPrice: number | null; // Current price if exists
   priceChange: number | null; // Percentage change from current
   noTierData: boolean; // True if no tier data available for this currency
+  multiplier: number; // Pricing multiplier applied to base
+  multiplierSource?: 'world-bank' | 'big-mac' | 'static' | 'custom' | 'direct';
 }
 
 export function AppleSubscriptionBulkPricingModal({
@@ -353,6 +355,8 @@ export function AppleSubscriptionBulkPricingModal({
         currentPrice,
         priceChange,
         noTierData: !closestTier,
+        multiplier: calculated.multiplier,
+        multiplierSource: calculated.multiplierSource,
       };
     });
   }, [basePriceNum, targetRegions, strategy, rounding, pppData, actualCurrencies, exchangeRates, subscription.prices]);
@@ -377,6 +381,10 @@ export function AppleSubscriptionBulkPricingModal({
           case 'currency':
             aValue = a.currency;
             bValue = b.currency;
+            break;
+          case 'multiplier':
+            aValue = a.multiplier;
+            bValue = b.multiplier;
             break;
           case 'current':
             aValue = a.currentPrice || 0;
@@ -655,7 +663,7 @@ export function AppleSubscriptionBulkPricingModal({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 pr-4">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-4">
           <div className="space-y-6 py-4">
             {/* Base Price and Effective Date Row */}
             <div className="flex gap-8">
@@ -808,7 +816,7 @@ export function AppleSubscriptionBulkPricingModal({
                           onChange={() => setStrategy('bigmac')}
                           className="sr-only"
                         />
-                        <Beef className="h-4 w-4 shrink-0" />
+                        <Hamburger className="h-4 w-4 shrink-0" />
                         <span className="text-sm font-medium truncate">Big Mac</span>
                       </label>
                     </TooltipTrigger>
@@ -930,7 +938,8 @@ export function AppleSubscriptionBulkPricingModal({
                   </div>
                 </div>
                 <div className="border rounded-lg">
-                  <ScrollArea className="h-96">
+                  <ScrollArea className="h-72">
+                    <TooltipProvider delayDuration={100}>
                     <Table>
                       <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                         <TableRow>
@@ -954,6 +963,11 @@ export function AppleSubscriptionBulkPricingModal({
                           <TableHead className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('currency')}>
                             <div className="flex items-center">
                               Currency {getSortIcon('currency')}
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-right cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('multiplier')}>
+                            <div className="flex items-center justify-end">
+                              Multiplier {getSortIcon('multiplier')}
                             </div>
                           </TableHead>
                           <TableHead className="text-right cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('current')}>
@@ -1000,6 +1014,33 @@ export function AppleSubscriptionBulkPricingModal({
                               <TableCell className="text-sm text-muted-foreground">
                                 {preview.currency}
                               </TableCell>
+                              <TableCell className="text-right text-sm">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className={
+                                      preview.multiplier < 1
+                                        ? 'text-green-600 cursor-help'
+                                        : preview.multiplier > 1
+                                        ? 'text-orange-600 cursor-help'
+                                        : 'text-muted-foreground cursor-help'
+                                    }>
+                                      {preview.multiplier.toFixed(2)}×
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    <p className="text-xs">
+                                      {preview.multiplierSource === 'world-bank' && 'World Bank PPP data'}
+                                      {preview.multiplierSource === 'big-mac' && 'Big Mac Index'}
+                                      {preview.multiplierSource === 'static' && 'Static fallback data'}
+                                      {preview.multiplierSource === 'custom' && 'Custom multiplier'}
+                                      {preview.multiplierSource === 'direct' && 'Direct conversion (1:1)'}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Relative to base: {preview.multiplier.toFixed(2)}×
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableCell>
                               <TableCell className="text-right text-sm text-muted-foreground">
                                 {preview.currentPrice !== null
                                   ? formatPrice(preview.currentPrice, preview.currency)
@@ -1034,12 +1075,13 @@ export function AppleSubscriptionBulkPricingModal({
                         })}
                       </TableBody>
                     </Table>
+                    </TooltipProvider>
                   </ScrollArea>
                 </div>
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
