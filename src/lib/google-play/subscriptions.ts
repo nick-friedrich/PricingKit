@@ -149,8 +149,14 @@ export async function updateBasePlanPrices(
     const calculatedPrices = calculateBulkPrices(
       baseUsdPrice,
       missingRegions,
-      'direct',
-      'charm'
+      'direct', // Use simple exchange rate for fill-in regions
+      'charm',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'USD',
+      'US'
     );
     for (const calculated of calculatedPrices) {
       configMap.set(calculated.regionCode, {
@@ -237,7 +243,13 @@ export async function deleteBasePlanRegionPrice(
       baseUsdPrice,
       missingRegions,
       'direct',
-      'charm'
+      'charm',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'USD',
+      'US'
     );
     for (const calculated of calculatedPrices) {
       configMap.set(calculated.regionCode, {

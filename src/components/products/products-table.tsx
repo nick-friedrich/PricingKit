@@ -267,23 +267,19 @@ export function ProductsTable({
                     {product.status}
                   </Badge>
                 </TableCell>
-                {platform !== 'apple' && (
-                  <TableCell>
-                    {product.defaultPrice && product.defaultPrice.units !== '0' ? (
-                      formatMoney(product.defaultPrice)
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                )}
-                {platform !== 'apple' && (
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span>{getRegionCount(product)}</span>
-                    </div>
-                  </TableCell>
-                )}
+                <TableCell>
+                  {product.defaultPrice && product.defaultPrice.units !== '0' ? (
+                    formatMoney(product.defaultPrice)
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span>{getRegionCount(product)}</span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
