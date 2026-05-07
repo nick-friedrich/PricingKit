@@ -38,7 +38,6 @@ interface PlatformItemProps {
 }
 
 function PlatformItem({
-  id,
   name,
   icon: Icon,
   identifier,

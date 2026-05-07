@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getAppleAuthFromCookies } from '../auth/route';
 import {
   listInAppPurchases,
-  getInAppPurchasePrices,
   AppleApiError,
 } from '@/lib/apple-connect';
 

@@ -78,6 +78,25 @@ function getSubscriptionTitle(subscription: Subscription): string {
   return defaultListing?.title || subscription.productId;
 }
 
+function SortIcon({
+  field,
+  sortField,
+  sortOrder,
+}: {
+  field: SortField;
+  sortField: SortField;
+  sortOrder: SortOrder;
+}) {
+  if (sortField !== field) {
+    return <ChevronsUpDown className="ml-1 h-4 w-4" />;
+  }
+  return sortOrder === 'asc' ? (
+    <ChevronUp className="ml-1 h-4 w-4" />
+  ) : (
+    <ChevronDown className="ml-1 h-4 w-4" />
+  );
+}
+
 function getActiveBasePlansCount(subscription: Subscription): number {
   return subscription.basePlans?.filter((bp) => bp.state?.toLowerCase() === 'active').length || 0;
 }
@@ -149,53 +168,6 @@ function getApplePeriod(subscription: Subscription): string {
 // Get Apple subscription status
 function getAppleStatus(subscription: Subscription): string {
   return getAppleSubscriptionData(subscription)?.state || 'unknown';
-}
-
-// Get Apple base price (from normalized _appleSubscription data)
-function getAppleBasePrice(subscription: Subscription): { price: string; currency: string } | null {
-  const basePrice = getAppleSubscriptionData(subscription)?.basePrice;
-  if (basePrice?.customerPrice) {
-    return {
-      price: basePrice.customerPrice,
-      currency: basePrice.currency || 'USD',
-    };
-  }
-  return null;
-}
-
-// Get Apple total regions count
-function getAppleTotalRegions(subscription: Subscription): number {
-  const prices = getAppleSubscriptionData(subscription)?.prices;
-  return prices ? Object.keys(prices).length : 0;
-}
-
-// Format Apple price for display
-function formatApplePriceDisplay(price: string, currency: string): string {
-  const amount = parseFloat(price);
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).format(amount);
-  } catch {
-    return `${currency} ${price}`;
-  }
-}
-
-// Format Apple status for display
-function formatAppleStatus(status: string): { label: string; variant: 'default' | 'secondary' | 'outline' } {
-  const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
-    'APPROVED': { label: 'Approved', variant: 'default' },
-    'READY_TO_SUBMIT': { label: 'Ready', variant: 'secondary' },
-    'WAITING_FOR_REVIEW': { label: 'In Review', variant: 'outline' },
-    'DEVELOPER_ACTION_NEEDED': { label: 'Action Needed', variant: 'secondary' },
-    'IN_REVIEW': { label: 'In Review', variant: 'outline' },
-    'PENDING_BINARY_APPROVAL': { label: 'Pending', variant: 'outline' },
-    'REJECTED': { label: 'Rejected', variant: 'secondary' },
-    'DEVELOPER_REMOVED_FROM_SALE': { label: 'Removed', variant: 'secondary' },
-    'REMOVED_FROM_SALE': { label: 'Removed', variant: 'secondary' },
-  };
-  return statusMap[status] || { label: status, variant: 'secondary' };
 }
 
 function BasePlanRow({ basePlan }: { basePlan: BasePlan }) {
@@ -339,17 +311,6 @@ export function SubscriptionsTable({
     setExpandedRows(newExpanded);
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
-      return <ChevronsUpDown className="ml-1 h-4 w-4" />;
-    }
-    return sortOrder === 'asc' ? (
-      <ChevronUp className="ml-1 h-4 w-4" />
-    ) : (
-      <ChevronDown className="ml-1 h-4 w-4" />
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -429,7 +390,7 @@ export function SubscriptionsTable({
                 onClick={() => handleSort('productId')}
               >
                 Product ID / Name
-                <SortIcon field="productId" />
+                <SortIcon field="productId" sortField={sortField} sortOrder={sortOrder} />
               </Button>
             </TableHead>
             {platform === 'google' ? (
@@ -441,7 +402,7 @@ export function SubscriptionsTable({
                     onClick={() => handleSort('basePlans')}
                   >
                     Base Plans
-                    <SortIcon field="basePlans" />
+                    <SortIcon field="basePlans" sortField={sortField} sortOrder={sortOrder} />
                   </Button>
                 </TableHead>
                 <TableHead>
@@ -451,7 +412,7 @@ export function SubscriptionsTable({
                     onClick={() => handleSort('status')}
                   >
                     Active Plans
-                    <SortIcon field="status" />
+                    <SortIcon field="status" sortField={sortField} sortOrder={sortOrder} />
                   </Button>
                 </TableHead>
                 <TableHead>Regions</TableHead>
@@ -473,7 +434,7 @@ export function SubscriptionsTable({
                     onClick={() => handleSort('status')}
                   >
                     Status
-                    <SortIcon field="status" />
+                    <SortIcon field="status" sortField={sortField} sortOrder={sortOrder} />
                   </Button>
                 </TableHead>
               </>

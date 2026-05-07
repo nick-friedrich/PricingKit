@@ -10,7 +10,7 @@ import type {
   AppleTerritory,
 } from './types';
 import { appleApiRequest, getAppIdForBundleId } from './client';
-import { getTerritoryByAlpha3, alpha3ToAlpha2, UNSUPPORTED_IAP_TERRITORIES } from './territories';
+import { alpha3ToAlpha2, UNSUPPORTED_IAP_TERRITORIES } from './territories';
 import { findClosestTierForCurrency, hasTierData } from './price-tier-data';
 
 // List all in-app purchases for an app
@@ -587,14 +587,6 @@ export async function updateInAppPurchasePrices(
 ): Promise<void> {
   // Filter out unsupported territories that cause 500 errors
   const supportedPrices = manualPrices.filter(p => !UNSUPPORTED_IAP_TERRITORIES.includes(p.territoryId));
-  const skippedCount = manualPrices.length - supportedPrices.length;
-
-  if (skippedCount > 0) {
-    const skippedTerritories = manualPrices
-      .filter(p => UNSUPPORTED_IAP_TERRITORIES.includes(p.territoryId))
-      .map(p => p.territoryId);
-    // console.log(`[Apple] Skipping ${skippedCount} unsupported territories: ${skippedTerritories.join(', ')}`);
-  }
 
   // Find base territory price (required by Apple)
   const basePrice = supportedPrices.find(p => p.territoryId === baseTerritoryId);
@@ -715,9 +707,6 @@ export async function resolvePPPPricesToPricePoints(
   inAppPurchaseId: string,
   prices: Record<string, { currencyCode: string; units: string; nanos?: number }>
 ): Promise<PPPResolutionResult> {
-  const territories = Object.entries(prices);
-  // console.log(`[Apple] resolvePPPPricesToPricePoints - Processing ${territories.length} territories`);
-
   // Check if we have cached tier data
   if (hasTierData()) {
     // console.log(`[Apple] Using cached tier data`);

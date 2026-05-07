@@ -1,11 +1,9 @@
 import type {
   AppleConnectCredentials,
-  AppleApiResponse,
   AppleApiListResponse,
   AppleApiErrorResponse,
 } from './types';
 
-const APPLE_API_BASE = 'https://api.appstoreconnect.apple.com/v1';
 const JWT_EXPIRY_SECONDS = 20 * 60; // 20 minutes (max allowed)
 const TOKEN_REFRESH_MARGIN = 60; // Refresh 1 minute before expiry
 

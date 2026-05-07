@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { NormalizedAppleProduct, AppleProductPrice } from '@/lib/apple-connect/types';
+import type { NormalizedAppleProduct } from '@/lib/apple-connect/types';
 
 export function useAppleProducts() {
   return useQuery<{ products: NormalizedAppleProduct[] }>({

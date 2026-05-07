@@ -68,7 +68,7 @@ export default function SettingsPage() {
       } else {
         toast.error(data.error || 'Failed to save API key');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to save API key');
     } finally {
       setSaving(false);
@@ -87,7 +87,7 @@ export default function SettingsPage() {
         toast.success('API key removed');
         fetchStatus();
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove API key');
     }
   };

@@ -3,13 +3,6 @@
 
 import { GOOGLE_PLAY_REGIONS } from '@/lib/google-play/types';
 
-// World Bank country codes differ from Google Play region codes in some cases
-const REGION_TO_WORLD_BANK: Record<string, string> = {
-  // Most codes are the same (ISO 3166-1 alpha-2), but some differ
-  GB: 'GBR', // United Kingdom uses GBR in World Bank
-  // Add more mappings as needed
-};
-
 // Map World Bank 3-letter codes back to 2-letter region codes
 const WORLD_BANK_TO_REGION: Record<string, string> = {
   USA: 'US',
@@ -284,7 +277,7 @@ export async function getPPPMultipliers(forceRefresh = false): Promise<PPPMultip
 
     const multipliers: Record<string, number> = {};
     const pppConversionFactors: Record<string, number> = {};
-    let baseYear = usPPP.year;
+    const baseYear = usPPP.year;
 
     for (const data of pppData) {
       // Store the raw PPP conversion factor

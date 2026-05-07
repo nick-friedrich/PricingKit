@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Subscription, RegionalBasePlanConfig } from '@/lib/google-play/types';
+import type { RegionalBasePlanConfig } from '@/lib/google-play/types';
 import type { RawAppleSubscription, SubscriptionsListResponse, SubscriptionResponse } from '@/types/api';
 import type { AppleProductPrice } from '@/lib/apple-connect/types';
 import { useAuthStore } from '@/store/auth-store';

@@ -53,18 +53,23 @@ function getRegionCount(product: InAppProduct): number {
   return Object.keys(product.prices || {}).length;
 }
 
-function formatProductType(type?: string): string {
-  if (!type) return '—';
-  // Apple types: CONSUMABLE, NON_CONSUMABLE, NON_RENEWING_SUBSCRIPTION
-  // Google types: managedUser, subscription
-  const typeMap: Record<string, string> = {
-    CONSUMABLE: 'Consumable',
-    NON_CONSUMABLE: 'Non-Consumable',
-    NON_RENEWING_SUBSCRIPTION: 'Non-Renewing',
-    managedUser: 'Managed',
-    subscription: 'Subscription',
-  };
-  return typeMap[type] || type;
+function SortIcon({
+  field,
+  sortField,
+  sortOrder,
+}: {
+  field: SortField;
+  sortField: SortField;
+  sortOrder: SortOrder;
+}) {
+  if (sortField !== field) {
+    return <ChevronsUpDown className="ml-1 h-4 w-4" />;
+  }
+  return sortOrder === 'asc' ? (
+    <ChevronUp className="ml-1 h-4 w-4" />
+  ) : (
+    <ChevronDown className="ml-1 h-4 w-4" />
+  );
 }
 
 export function ProductsTable({
@@ -142,17 +147,6 @@ export function ProductsTable({
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
-      return <ChevronsUpDown className="ml-1 h-4 w-4" />;
-    }
-    return sortOrder === 'asc' ? (
-      <ChevronUp className="ml-1 h-4 w-4" />
-    ) : (
-      <ChevronDown className="ml-1 h-4 w-4" />
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -197,7 +191,7 @@ export function ProductsTable({
                 onClick={() => handleSort('sku')}
               >
                 SKU / Name
-                <SortIcon field="sku" />
+                <SortIcon field="sku" sortField={sortField} sortOrder={sortOrder} />
               </Button>
             </TableHead>
             <TableHead>
@@ -207,7 +201,7 @@ export function ProductsTable({
                 onClick={() => handleSort('status')}
               >
                 Status
-                <SortIcon field="status" />
+                <SortIcon field="status" sortField={sortField} sortOrder={sortOrder} />
               </Button>
             </TableHead>
             {platform !== 'apple' && (
@@ -218,7 +212,7 @@ export function ProductsTable({
                   onClick={() => handleSort('price')}
                 >
                   Base Price{products[0]?.defaultPrice?.currencyCode ? ` (${products[0].defaultPrice.currencyCode})` : ''}
-                  <SortIcon field="price" />
+                  <SortIcon field="price" sortField={sortField} sortOrder={sortOrder} />
                 </Button>
               </TableHead>
             )}
@@ -230,7 +224,7 @@ export function ProductsTable({
                   onClick={() => handleSort('regions')}
                 >
                   Regions
-                  <SortIcon field="regions" />
+                  <SortIcon field="regions" sortField={sortField} sortOrder={sortOrder} />
                 </Button>
               </TableHead>
             )}

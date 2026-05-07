@@ -41,7 +41,6 @@ import { Badge } from '@/components/ui/badge';
 import type { Subscription, BasePlan, RegionalBasePlanConfig, Money } from '@/lib/google-play/types';
 import {
   GOOGLE_PLAY_REGIONS,
-  formatMoney,
   parseMoney,
   moneyToNumber,
 } from '@/lib/google-play/types';
@@ -91,7 +90,6 @@ function BasePlanPricingSection({
   onPriceChange,
   onAddRegion,
   onCancelChange,
-  onDeleteRegion,
 }: {
   subscription: Subscription;
   basePlan: BasePlan;
@@ -99,7 +97,6 @@ function BasePlanPricingSection({
   onPriceChange: (regionCode: string, value: string) => void;
   onAddRegion: (regionCode: string) => void;
   onCancelChange: (regionCode: string) => void;
-  onDeleteRegion: (regionCode: string) => void;
 }) {
   const [addRegionOpen, setAddRegionOpen] = useState(false);
   const [bulkPricingOpen, setBulkPricingOpen] = useState(false);
@@ -560,9 +557,6 @@ export function BasePlanEditor({ subscription }: BasePlanEditorProps) {
                     handleAddRegion(basePlan.basePlanId, regionCode)
                   }
                   onCancelChange={(regionCode) =>
-                    handleCancelChange(basePlan.basePlanId, regionCode)
-                  }
-                  onDeleteRegion={(regionCode) =>
                     handleCancelChange(basePlan.basePlanId, regionCode)
                   }
                 />

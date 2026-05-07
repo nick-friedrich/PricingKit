@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { InAppProduct, Money } from '@/lib/google-play/types';
+import type { Money } from '@/lib/google-play/types';
 import type { RawAppleProduct, ProductsListResponse, ProductResponse } from '@/types/api';
 import { useAuthStore } from '@/store/auth-store';
 

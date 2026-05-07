@@ -148,7 +148,7 @@ export async function updateInAppProductPrices(
   packageName: string,
   productId: string,
   prices: Record<string, Money>,
-  defaultPrice?: Money
+  _defaultPrice?: Money
 ): Promise<InAppProduct> {
   // For the new API, pricing is managed through purchase options
   // This is a simplified implementation - full implementation would need to handle
@@ -241,7 +241,7 @@ export async function deleteRegionPrice(
   client: AndroidPublisher,
   packageName: string,
   productId: string,
-  regionCode: string
+  _regionCode: string
 ): Promise<InAppProduct> {
   // This would need to be implemented based on the new API structure
   // For now, get the product and return it

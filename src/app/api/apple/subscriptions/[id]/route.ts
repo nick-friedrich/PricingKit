@@ -290,7 +290,6 @@ const deletePriceSchema = z.object({
 // DELETE /api/apple/subscriptions/[id] - Delete a subscription price
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getAppleAuthFromCookies();
