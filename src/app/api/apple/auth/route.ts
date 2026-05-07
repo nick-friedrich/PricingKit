@@ -96,6 +96,7 @@ export async function GET() {
   try {
     const cookieStore = await cookies();
     const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
+    const bundleId = cookieStore.get(BUNDLE_ID_COOKIE)?.value ?? null;
 
     if (!sessionId) {
       return NextResponse.json({ authenticated: false });
@@ -106,10 +107,9 @@ export async function GET() {
       return NextResponse.json({ authenticated: false });
     }
 
-    // Use bundleId from credentials as single source of truth
     return NextResponse.json({
       authenticated: true,
-      bundleId: credentials.bundleId,
+      bundleId,
       keyId: credentials.keyId,
       issuerId: credentials.issuerId,
     });
@@ -148,17 +148,21 @@ export async function getAppleAuthFromCookies(): Promise<{
 } | null> {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
+  const bundleId = cookieStore.get(BUNDLE_ID_COOKIE)?.value;
 
-  if (!sessionId) {
+  if (!sessionId || !bundleId) {
     return null;
   }
 
-  const credentials = await getAppleSessionCredentials(sessionId);
-  if (!credentials) {
+  const sessionCredentials = await getAppleSessionCredentials(sessionId);
+  if (!sessionCredentials) {
     return null;
   }
 
-  // Use bundleId from credentials as single source of truth
-  // This prevents mismatch between cookie and session data
-  return { credentials, bundleId: credentials.bundleId };
+  const credentials: AppleConnectCredentials = {
+    ...sessionCredentials,
+    bundleId,
+  };
+
+  return { credentials, bundleId };
 }
