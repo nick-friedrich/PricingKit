@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ExternalLink,
@@ -26,15 +27,14 @@ function StepNumber({ num }: { num: number }) {
 }
 
 export default function AppleSetupGuidePage() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Link>
+          <Button variant="ghost" className="mb-4" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
           <h1 className="text-3xl font-bold mb-2">Apple App Store Connect Setup</h1>
           <p className="text-muted-foreground">

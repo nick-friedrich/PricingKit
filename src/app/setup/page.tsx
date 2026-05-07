@@ -62,7 +62,7 @@ export default function SetupPage() {
                   </p>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" asChild>
-                      <Link href="/setup-guide">
+                      <Link href="/setup-guide/google">
                         Google Play Guide
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
