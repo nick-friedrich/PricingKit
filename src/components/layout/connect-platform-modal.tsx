@@ -49,7 +49,6 @@ export function ConnectPlatformModal({
   // Apple-specific state
   const [keyId, setKeyId] = useState('');
   const [issuerId, setIssuerId] = useState('');
-  const [bundleId, setBundleId] = useState('');
 
   const [state, setState] = useState<UploadState>({
     isDragging: false,
@@ -64,7 +63,6 @@ export function ConnectPlatformModal({
     setPackageName('');
     setKeyId('');
     setIssuerId('');
-    setBundleId('');
     setState({
       isDragging: false,
       file: null,
@@ -220,12 +218,7 @@ export function ConnectPlatformModal({
   };
 
   const handleAppleSubmit = async () => {
-    if (
-      !state.file ||
-      !keyId.trim() ||
-      !issuerId.trim() ||
-      !bundleId.trim()
-    ) {
+    if (!state.file || !keyId.trim() || !issuerId.trim()) {
       setState((prev) => ({
         ...prev,
         error: 'Please provide all required fields',
@@ -251,7 +244,6 @@ export function ConnectPlatformModal({
           privateKey,
           keyId: keyId.trim(),
           issuerId: issuerId.trim(),
-          bundleId: bundleId.trim(),
         }),
       });
 
@@ -269,12 +261,13 @@ export function ConnectPlatformModal({
       }
 
       setAppleAuthenticated({
-        bundleId: bundleId.trim(),
+        bundleId: null,
         keyId: keyId.trim(),
         issuerId: issuerId.trim(),
       });
       setPlatform('apple');
       handleOpenChange(false);
+      router.push('/setup/apple/select-app');
     } catch (error) {
       console.error('Upload error:', error);
       setState((prev) => ({
@@ -297,7 +290,7 @@ export function ConnectPlatformModal({
   const isFormValid =
     platform === 'google'
       ? state.file && packageName.trim()
-      : state.file && keyId.trim() && issuerId.trim() && bundleId.trim();
+      : state.file && keyId.trim() && issuerId.trim();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -328,17 +321,6 @@ export function ConnectPlatformModal({
             </div>
           ) : (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="bundleId">Bundle ID</Label>
-                <Input
-                  id="bundleId"
-                  type="text"
-                  placeholder="com.example.myapp"
-                  value={bundleId}
-                  onChange={(e) => setBundleId(e.target.value)}
-                  disabled={state.isLoading}
-                />
-              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="keyId">Key ID</Label>
