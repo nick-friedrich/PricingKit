@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Breadcrumbs } from './breadcrumbs';
 import { useAuthStore } from '@/store/auth-store';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface HeaderProps {
   onRefresh?: () => void;
@@ -23,6 +24,7 @@ export function Header({
   showSearch = true,
 }: HeaderProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   const handleLogout = async () => {
@@ -31,6 +33,7 @@ export function Header({
         fetch('/api/auth', { method: 'DELETE' }),
         fetch('/api/apple/auth', { method: 'DELETE' }),
       ]);
+      queryClient.clear();
       clearAuth();
       router.push('/setup');
     } catch (error) {

@@ -18,7 +18,7 @@ let cachedToken: CachedToken | null = null;
 
 // Hash credentials for cache validation
 function hashCredentials(credentials: AppleConnectCredentials): string {
-  return `${credentials.keyId}-${credentials.issuerId}-${credentials.bundleId}`;
+  return `${credentials.keyId}-${credentials.issuerId}`;
 }
 
 // Generate JWT for App Store Connect API
@@ -133,9 +133,6 @@ export function validateAppleCredentials(
     return false;
   }
   if (typeof obj.issuerId !== 'string' || !obj.issuerId) {
-    return false;
-  }
-  if (typeof obj.bundleId !== 'string' || !obj.bundleId) {
     return false;
   }
 
@@ -295,13 +292,17 @@ export async function testAppleConnection(
   credentials: AppleConnectCredentials
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Try to list apps to verify credentials
-    await appleApiRequest<AppleApiListResponse<unknown>>(credentials, '/apps', {
-      queryParams: {
-        'filter[bundleId]': credentials.bundleId,
-        limit: '1',
-      },
-    });
+    const response = await appleApiRequest<AppleApiListResponse<unknown>>(
+      credentials,
+      '/apps',
+      { queryParams: { limit: '1' } }
+    );
+    if (!response.data || response.data.length === 0) {
+      return {
+        success: false,
+        error: 'No apps found for this API key. Verify the key has at least one app assigned in App Store Connect → Users and Access.',
+      };
+    }
     return { success: true };
   } catch (error) {
     if (error instanceof AppleApiError) {
@@ -315,12 +316,6 @@ export async function testAppleConnection(
         return {
           success: false,
           error: 'Access denied. The API key may not have sufficient permissions.',
-        };
-      }
-      if (error.statusCode === 404) {
-        return {
-          success: false,
-          error: `App with Bundle ID "${credentials.bundleId}" not found in App Store Connect.`,
         };
       }
       return { success: false, error: error.detail };

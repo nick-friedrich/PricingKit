@@ -75,20 +75,29 @@ export default function DashboardLayout({
           hasValidAuth = true;
         }
 
-    // Sync Apple auth state
-    if (appleData.authenticated) {
-      // Invalidate queries if bundleId changed (prevents stale data)
-      if (prevBundleId && prevBundleId !== appleData.bundleId) {
-        queryClient.invalidateQueries();
-      }
-      prevBundleId = appleData.bundleId;
-      setAppleAuthenticated({
-        bundleId: appleData.bundleId,
-        keyId: appleData.keyId ?? '',
-        issuerId: appleData.issuerId ?? '',
-      });
-      hasValidAuth = true;
-    }
+        // Sync Apple auth state
+        if (appleData.authenticated) {
+          // Invalidate queries if bundleId changed (prevents stale data)
+          if (prevBundleId && prevBundleId !== appleData.bundleId) {
+            queryClient.invalidateQueries();
+          }
+          prevBundleId = appleData.bundleId ?? null;
+          setAppleAuthenticated({
+            bundleId: appleData.bundleId ?? null,
+            keyId: appleData.keyId ?? '',
+            issuerId: appleData.issuerId ?? '',
+          });
+          hasValidAuth = true;
+
+          // Authenticated but no app picked yet → force the selector
+          if (!appleData.bundleId) {
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem(AUTH_VERIFIED_KEY);
+            }
+            router.replace('/setup/apple/select-app');
+            return;
+          }
+        }
 
         if (hasValidAuth) {
           if (typeof window !== 'undefined') {
