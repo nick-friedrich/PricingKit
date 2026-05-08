@@ -16,6 +16,8 @@ import { AddGoogleAppModal } from './add-google-app-modal';
 
 export function AppSwitcher() {
   const platform = useAuthStore((s) => s.platform);
+  const isAppleAuthenticated = useAuthStore((s) => s.isAppleAuthenticated);
+  const isGoogleAuthenticated = useAuthStore((s) => s.isGoogleAuthenticated);
   const activeBundleId = useAuthStore((s) => s.bundleId);
   const activePackageName = useAuthStore((s) => s.packageName);
   const googleAppHistory = useAuthStore((s) => s.googleAppHistory);
@@ -31,14 +33,22 @@ export function AppSwitcher() {
   const [open, setOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  if (!platform) return null;
+  // Hide entirely if neither platform is connected.
+  if (!isAppleAuthenticated && !isGoogleAuthenticated) return null;
 
-  const triggerLabel =
-    platform === 'apple'
-      ? appleApps.data?.find((a) => a.bundleId === activeBundleId)?.name ??
+  const triggerLabel = (() => {
+    if (platform === 'apple') {
+      const name =
+        appleApps.data?.find((a) => a.bundleId === activeBundleId)?.name ??
         activeBundleId ??
-        'Select app'
-      : activePackageName ?? 'Select app';
+        'Select app';
+      return { name, badge: 'Apple' };
+    }
+    if (platform === 'google') {
+      return { name: activePackageName ?? 'Select app', badge: 'Google' };
+    }
+    return { name: 'Select app', badge: null };
+  })();
 
   const handlePickApple = async (bundleId: string) => {
     try {
@@ -60,6 +70,7 @@ export function AppSwitcher() {
     }
   };
 
+  // Only show Google entries belonging to the currently authenticated client_email.
   const googleEntries = clientEmail
     ? googleAppHistory.filter((entry) => entry.clientEmail === clientEmail)
     : googleAppHistory;
@@ -74,109 +85,135 @@ export function AppSwitcher() {
             aria-expanded={open}
             className="w-full justify-between"
           >
-            <span className="truncate">{triggerLabel}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              {triggerLabel.badge && (
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground shrink-0">
+                  {triggerLabel.badge}
+                </span>
+              )}
+              <span className="truncate">{triggerLabel.name}</span>
+            </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-          {platform === 'apple' && (
-            <div className="max-h-72 overflow-auto py-1">
-              {appleApps.isLoading && (
-                <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-3 w-3 animate-spin" /> Loading apps…
-                </div>
-              )}
-              {appleApps.error && (
-                <div className="px-3 py-2 text-sm text-destructive">
-                  {appleApps.error instanceof Error
-                    ? appleApps.error.message
-                    : 'Failed to load apps.'}
-                </div>
-              )}
-              {appleApps.data?.length === 0 && (
-                <div className="px-3 py-2 text-sm text-muted-foreground">
-                  No apps found.
-                </div>
-              )}
-              {appleApps.data?.map((app) => {
-                const isActive = app.bundleId === activeBundleId;
-                return (
+          <div className="max-h-96 overflow-auto py-1">
+            {isAppleAuthenticated && (
+              <div>
+                <div className="flex items-center justify-between px-3 pt-2 pb-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Apple App Store
+                  </span>
                   <button
-                    key={app.id}
                     type="button"
-                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
-                    onClick={() => handlePickApple(app.bundleId)}
-                    disabled={setActive.isPending}
+                    aria-label="Refresh Apple apps list"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      appleApps.refetch();
+                    }}
                   >
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{app.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {app.bundleId}
-                      </p>
-                    </div>
-                    {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                    <RefreshCw className="h-3 w-3" />
                   </button>
-                );
-              })}
-              <div className="border-t mt-1">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
-                  onClick={() => appleApps.refetch()}
-                >
-                  <RefreshCw className="h-3 w-3" /> Refresh apps list
-                </button>
-              </div>
-            </div>
-          )}
-
-          {platform === 'google' && (
-            <div className="max-h-72 overflow-auto py-1">
-              {googleEntries.length === 0 && (
-                <div className="px-3 py-2 text-sm text-muted-foreground">
-                  No saved apps yet.
                 </div>
-              )}
-              {googleEntries.map((entry) => {
-                const isActive = entry.packageName === activePackageName;
-                return (
-                  <div
-                    key={`${entry.packageName}-${entry.clientEmail}`}
-                    className="group flex w-full items-center justify-between gap-2 px-3 py-2 hover:bg-muted"
-                  >
+                {appleApps.isLoading && (
+                  <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Loading apps…
+                  </div>
+                )}
+                {appleApps.error && (
+                  <div className="px-3 py-2 text-sm text-destructive">
+                    {appleApps.error instanceof Error
+                      ? appleApps.error.message
+                      : 'Failed to load apps.'}
+                  </div>
+                )}
+                {!appleApps.isLoading && appleApps.data?.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    No apps found.
+                  </div>
+                )}
+                {appleApps.data?.map((app) => {
+                  const isActive =
+                    platform === 'apple' && app.bundleId === activeBundleId;
+                  return (
                     <button
+                      key={`apple-${app.id}`}
                       type="button"
-                      className="flex-1 min-w-0 text-left text-sm"
-                      onClick={() => handlePickGoogle(entry.packageName)}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50"
+                      onClick={() => handlePickApple(app.bundleId)}
                       disabled={setActive.isPending}
                     >
-                      <p className="truncate font-medium">{entry.packageName}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {entry.clientEmail}
-                      </p>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{app.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {app.bundleId}
+                        </p>
+                      </div>
+                      {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
                     </button>
-                    {isActive ? (
-                      <Check className="h-4 w-4 text-primary shrink-0" />
-                    ) : (
+                  );
+                })}
+              </div>
+            )}
+
+            {isAppleAuthenticated && isGoogleAuthenticated && (
+              <div className="my-1 border-t" />
+            )}
+
+            {isGoogleAuthenticated && (
+              <div>
+                <div className="px-3 pt-2 pb-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Google Play
+                  </span>
+                </div>
+                {googleEntries.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    No saved apps yet.
+                  </div>
+                )}
+                {googleEntries.map((entry) => {
+                  const isActive =
+                    platform === 'google' &&
+                    entry.packageName === activePackageName;
+                  return (
+                    <div
+                      key={`google-${entry.packageName}-${entry.clientEmail}`}
+                      className="group flex w-full items-center justify-between gap-2 px-3 py-2 hover:bg-muted"
+                    >
                       <button
                         type="button"
-                        aria-label={`Remove ${entry.packageName} from history`}
-                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeGoogleAppFromHistory(
-                            entry.packageName,
-                            entry.clientEmail
-                          );
-                        }}
+                        className="flex-1 min-w-0 text-left text-sm disabled:opacity-50"
+                        onClick={() => handlePickGoogle(entry.packageName)}
+                        disabled={setActive.isPending}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <p className="truncate font-medium">{entry.packageName}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {entry.clientEmail}
+                        </p>
                       </button>
-                    )}
-                  </div>
-                );
-              })}
-              <div className="border-t mt-1">
+                      {isActive ? (
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={`Remove ${entry.packageName} from history`}
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeGoogleAppFromHistory(
+                              entry.packageName,
+                              entry.clientEmail
+                            );
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
@@ -185,15 +222,15 @@ export function AppSwitcher() {
                     setOpen(false);
                   }}
                 >
-                  <Plus className="h-3 w-3" /> Add app
+                  <Plus className="h-3 w-3" /> Add Google app
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </PopoverContent>
       </Popover>
 
-      {platform === 'google' && (
+      {isGoogleAuthenticated && (
         <AddGoogleAppModal
           open={showAddModal}
           onOpenChange={setShowAddModal}

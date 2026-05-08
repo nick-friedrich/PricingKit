@@ -38,6 +38,7 @@ export function useSetActiveApp() {
   const queryClient = useQueryClient();
   const setActiveBundleId = useAuthStore((s) => s.setActiveBundleId);
   const setActivePackageName = useAuthStore((s) => s.setActivePackageName);
+  const setPlatform = useAuthStore((s) => s.setPlatform);
 
   return useMutation({
     mutationFn: postActiveApp,
@@ -47,6 +48,11 @@ export function useSetActiveApp() {
       } else {
         setActivePackageName(variables.packageName);
       }
+      // Switch the active platform too so the rest of the UI re-renders against
+      // the picked store. Without this, picking a Google app while on Apple (or
+      // vice-versa) leaves the dashboard route and the store's `platform` field
+      // out of sync.
+      setPlatform(variables.platform);
       queryClient.invalidateQueries();
     },
   });
