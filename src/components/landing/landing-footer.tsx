@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Github } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function LandingFooter() {
   return (
@@ -24,6 +25,11 @@ export function LandingFooter() {
             </a>
           </div>
 
+          <div className="flex flex-col items-center md:items-end gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/index-checker">Index Checker</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </footer>
