@@ -11,7 +11,8 @@ Free, open-source regional pricing tool for the App Store and Google Play. Set P
 - **Subscription management** - Manage subscription base plan pricing
 - **Bulk updates** - Update prices across multiple products/regions at once
 - **Currency conversion** - Automatic exchange rate lookups
-- **PPP support** - Purchasing Power Parity adjustments for regional pricing
+- **Multiple pricing strategies** - PPP (World Bank), Big Mac Index, Netflix Index, or custom multipliers for regional pricing
+- **Public Index Checker** - Compare regional prices across strategies at `/index-checker` (no auth required)
 - **Search & filter** - Find products by SKU/product ID or name
 
 ## Getting Started
@@ -49,6 +50,12 @@ npm run build
 npm start
 ```
 
+### Tests
+
+```bash
+npm test
+```
+
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router) with TypeScript
@@ -65,6 +72,7 @@ src/
 ├── app/
 │   ├── api/              # API routes (Google & Apple endpoints)
 │   ├── dashboard/        # Dashboard pages
+│   ├── index-checker/    # Public price index comparison tool
 │   └── setup-guide/      # Setup instructions
 ├── components/
 │   ├── ui/               # shadcn/ui components
@@ -75,7 +83,7 @@ src/
 │   ├── google-play/      # Google Play API integration
 │   ├── apple-connect/    # Apple App Store Connect API integration
 │   ├── exchange-rates/   # Currency conversion
-│   └── conversion-indexes/ # PPP data
+│   └── conversion-indexes/ # PPP, Big Mac, Netflix indexes + exchange rate fallbacks
 ├── hooks/                # React Query hooks
 └── store/                # Zustand stores
 ```
